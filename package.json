@@ -1,0 +1,69 @@
+{
+  "name": "api-gateway",
+  "version": "1.0.0",
+  "description": "Api GateWay Service",
+  "scripts": {
+    "dev": "moleculer-runner --repl --hot services",
+    "start": "moleculer-runner services",
+    "cli": "moleculer connect AMQP",
+    "ci": "jest --watch",
+    "test": "jest --coverage",
+    "lint": "eslint .",
+    "lint-fix": "eslint . --fix",
+    "build": "docker-compose -f docker/dev.docker-compose.yml build",
+    "up": "docker-compose -f docker/dev.docker-compose.yml up -d",
+    "down": "docker-compose -f docker/dev.docker-compose.yml down",
+    "stop": "docker-compose -f docker/dev.docker-compose.yml stop",
+    "start:all": "cd autorun && ./start.sh",
+    "stop:all": "cd autorun && ./stop.sh"
+  },
+  "keywords": [
+    "microservices",
+    "moleculer"
+  ],
+  "author": "SmitTeam",
+  "repository": "",
+  "devDependencies": {
+    "eslint": "^5.3.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-react": "^7.13.0",
+    "jest": "^23.6.0",
+    "jest-cli": "^23.6.0",
+    "moleculer-repl": "^0.6.4",
+    "nodemon": "^2.0.6"
+  },
+  "dependencies": {
+    "amqplib": "^0.5.3",
+    "bcrypt": "^5.0.0",
+    "crypto": "^1.0.1",
+    "dotenv": "^8.2.0",
+    "ioredis": "^4.2.0",
+    "knex": "^0.21.15",
+    "moleculer": "^0.14.6",
+    "moleculer-jaeger": "^0.2.3",
+    "moleculer-web": "^0.9.1",
+    "moment-timezone": "^0.5.32",
+    "njwt": "^1.0.0",
+    "nodemailer": "^6.4.17",
+    "objection": "^2.2.3",
+    "pg": "^8.5.1",
+    "randomstring": "^1.1.5",
+    "redlock": "^3.1.2"
+  },
+  "engines": {
+    "node": ">= 8.x.x"
+  },
+  "jest": {
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node",
+    "rootDir": "./services",
+    "testPathIgnorePatterns": [
+      "sample.*"
+    ],
+    "roots": [
+      "../test"
+    ]
+  }
+}
