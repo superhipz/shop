@@ -42,7 +42,7 @@ module.exports = {
                 $$strict: true
             },
             async handler(ctx) {
-                const props = ['id', 'first_name', 'last_name', 'email', 'password', 'status', 'type'];
+                const props = ['id', 'name', 'email', 'amount', 'password', 'status', 'type', 'phone', 'itemInCart']; // hiển thị thông tin data.user
 
                 // check email
                 const user = await User.query()
@@ -71,9 +71,10 @@ module.exports = {
             visibility: 'published',
             params: {
                 email: { type: 'email', mode: 'precise' },
-                first_name: { type: 'string', min: 1, max: 200 },
-                last_name: { type: 'string', min: 1, max: 200 },
-                phone: { type: 'string', min: 5, max: 100 },
+                name: { type: 'string', min: 1, max: 200 },
+                phone: {
+                    type: 'string', pattern: User.settings.regex.phoneNumber, min: 10, max: 12
+                },
                 password: {
                     type: 'string', min: 8, pattern: User.settings.regex.password, max: 255
                 },
@@ -116,6 +117,7 @@ module.exports = {
                     }], []);
                 }
 
+
                 delete params.password_confirmation;
 
                 // Check admin account
@@ -129,6 +131,8 @@ module.exports = {
                 return loginData;
             }
         },
+
+
         /**
          * Verify user token & return user info
          * use: ApiGateway
@@ -146,7 +150,7 @@ module.exports = {
                             return Promise.all([
                                 result.jti,
                                 User.query()
-                                    .select(['id', 'type', 'first_name', 'last_name', 'email', 'status', 'quantity', 'amount', 'active_token', 'active_expire']) // SAve ctx.meta.user
+                                    .select(['id', 'type', 'name', 'email', 'status', 'quantity', 'amount', 'active_token', 'active_expire']) // SAve ctx.meta.user
                                     .findOne({ id: result.user_id })
                                 // ctx.call('organization.verifyOrg', { user_id: result.user_id })
                             ]);
@@ -356,8 +360,7 @@ module.exports = {
                 const userInfo = await provider.handler(token);
                 const user = await User.query()
                     .findOne({ email: userInfo.email })
-                    .join('verifications', 'verifications.user_id', 'users.id')
-                    .select(['users.type', 'users.id', 'users.email', 'users.first_name', 'users.last_name', 'users.status', 'users.password', 'users.created_at', 'users.phone', `verifications.${provider.verifiedProps}`]);
+                    .select(['users.type', 'users.id', 'users.email', 'users.name', 'users.status', 'users.password', 'users.created_at', 'users.phone']);
 
                 if (user && !user[provider.verifiedProps]) {
                     throw new ValidationError('duplicate-credential', []);
@@ -370,7 +373,7 @@ module.exports = {
                         });
                     }
 
-                    const payload = await this.createUser({ ...lodash.pick(userInfo, ['email', 'first_name', 'last_name']), phone })
+                    const payload = await this.createUser({ ...lodash.pick(userInfo, ['email', 'name']) })
                         .catch(err => {
                             this.logger.info('Cannot register user:', userInfo);
                             userInfo.user.delete();
@@ -412,18 +415,14 @@ module.exports = {
          * @param
          *   - email
          *   - password
-         *   - first_name
-         *   - last_name
+         *   - name
          */
         createUser(params) {
             return User
                 .register(params)
                 .then(user => {
                     return Promise.all([
-                        user,
-                        Verification.query().insert({
-                            user_id: user.id
-                        })
+                        user
                     ]);
                 })
                 .then(async ([user]) => {

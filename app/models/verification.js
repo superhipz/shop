@@ -31,9 +31,9 @@ class Verification extends Model {
         };
     }
 
-    static verify(userID, provider) {
-        return this.query().where({ user_id: userID }).patch({ [provider.verifiedProps]: true });
-    }
+    // static verify(userID, provider) {
+    //     return this.query().where({ user_id: userID }).patch({ [provider.verifiedProps]: true });
+    // }
 }
 
 Verification.knex(knex);

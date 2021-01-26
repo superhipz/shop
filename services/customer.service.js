@@ -2,6 +2,8 @@
 
 // const lodash = require('lodash'); // lodash npm( array, object, .....)
 const User = require('../app/models/user');
+const Prod = require('../app/models/product');
+
 // const { MoleculerClientError, ValidationError } = require('moleculer').Errors;
 
 module.exports = {
@@ -24,16 +26,13 @@ module.exports = {
      */
     actions: {
         providerList: {
+            params: {
+
+            },
             handler() {
                 return User.query()
                     .where({ type: 'provider' })
-                    .select('email', 'phone', 'first_name', 'quantity');
-            }
-        },
-
-        dashboard: {
-            handler(ctx) {
-                return User.query().where({ id: ctx.meta.user.id });
+                    .select('id', 'email', 'phone', 'name', 'quantity', 'shop_name', 'shop_image');
             }
         },
 
@@ -47,28 +46,37 @@ module.exports = {
                 }
                 return 'Bạn không được phép nhận số tiền này do không phải khách hàng hoặc do bạn đã nhận trước đó rồi ';
             }
-
         },
 
         buyItem: {
-            async handler(ctx) {
-                let { select } = ctx.params;
-                let selectType = await User.query().where({ id: select }).select('type').first();
-                if (selectType.type === 'provider') {
-                    let { quantityBuy } = ctx.params; // Quantity want to buy
-                    let moneyPay = 15000 * quantityBuy; // Amount of money need to pay
+            params: {
 
-                    let quantity = await User.query().where({ id: select }).select('quantity').first(); // Quantity of that provider at the moment
-                    let amountCusHave = await User.query().where({ id: ctx.meta.user.id }).select('amount').first(); // Amount of money user is having
-                    if (quantityBuy > quantity.quantity || amountCusHave.amount < moneyPay) {
-                        return 'Kiem tra lai so tien ban co hoac so luong ban nhap vao';
-                    }
-                    await User.query().where({ id: ctx.meta.user.id }).decrement('amount', moneyPay); // Descrease money of customer
-                    await User.query().where({ id: select }).decrement('quantity', Number(quantityBuy)); // Descrease number of item (provider)
-                    await User.query().where({ id: select }).increment('amount', moneyPay); // Increase money of provider
-                    return `You have buy ${Number(quantityBuy)} item cost ${moneyPay} VND`;
+            },
+            async handler(ctx) {
+                let { totalMoneyToPay } = ctx.params;
+                let { itemId } = ctx.params;
+                let { shopId } = ctx.params;
+                let currentMoneyAmount = ctx.meta.user.amount;
+                let { quantityBuy } = ctx.params;
+                if (totalMoneyToPay > currentMoneyAmount) {
+                    return 'Không đủ tiền';
                 }
-                return 'This user is not a provider';
+                await User.query().where({ id: ctx.meta.user.id }).decrement('amount', totalMoneyToPay);
+                await Prod.query().where({ id: itemId }).decrement('quantity', quantityBuy);
+                await User.query().where({ id: shopId }).increment('amount', totalMoneyToPay);
+                return 'OKEEE';
+            }
+        },
+
+        productList: {
+            handler(ctx) {
+                return Prod.query().select('user_id', 'id', 'email', 'name', 'category', 'price', 'quantity', 'description', 'brand', 'location', 'itemImage', 'count').whereNotDeleted();
+            }
+        },
+
+        userInfo: {
+            handler(ctx) {
+                return User.query().where({ id: ctx.meta.user.id }).select('email', 'id', 'amount', 'name', 'phone', 'status', 'type');
             }
         }
 

@@ -6,12 +6,14 @@ exports.up = (knex) => {
 
         table.string('email').unique().notNullable();
         table.string('phone', 40).nullable().unique();
-        table.string('first_name').notNullable();
-        table.string('last_name').notNullable();
-        table.string('status').notNullable().defaultTo('inactive'); // active, inactive
-        table.integer('amount').notNullable().defaultTo('0');
-        table.string('password');
-        table.integer('quantity').notNullable().defaultTo('0');
+        table.string('name').notNullable();
+        table.string('status').defaultTo('inactive'); // active, inactive
+        table.integer('amount').defaultTo('0');
+        table.string('password').notNullable();
+        table.string('shop_name').nullable();
+        table.string('shop_image').nullable();
+        table.integer('quantity').defaultTo('0');
+        table.integer('itemInCart').defaultTo('0');
         table.enu('type', ['provider', 'customer', 'admin']).notNullable();
         table.string('active_token');
         table.string('active_expire');

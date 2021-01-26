@@ -38,34 +38,50 @@ module.exports = {
         },
 
         approveQueue: {
-            async handler() {
-                return User.query().where({ status: 'inactive' }).select('id', 'email', 'phone', 'first_name', 'status');
+            async handler(ctx) {
+                let check = ctx.meta.user.type;
+                if (check === 'admin') {
+                    return User.query().where({ status: 'inactive' }).select('id', 'email', 'phone', 'name', 'status');
+                }
+                return 'You done have permission to access';
             }
         },
 
         activeProvider: {
             async handler(ctx) {
-                let { select } = ctx.params;
-                let check = await User.query().where({ id: select }).select('status', 'type').first();
-                if (check.status === 'inactive' && check.type === 'provider') {
-                    await User.query().where({ id: select }).update({ status: 'active' });
-                    return 'Your account is actived ';
+                let check1 = ctx.meta.user.type;
+                if (check1 === 'admin') {
+                    let { select } = ctx.params;
+                    let check = await User.query().where({ id: select }).select('status', 'type').first();
+                    if (check.status === 'inactive' && check.type === 'provider') {
+                        await User.query().where({ id: select }).update({ status: 'active' });
+                        return 'Your account is actived ';
+                    }
+                    return 'Selected account is not provider or is actived already';
                 }
-                return 'Selected account is not provider or is actived already';
+                return 'You done have permission to access';
             }
         },
 
         banProvider: {
             async handler(ctx) {
-                let { select } = ctx.params;
-                await User.query().where({ id: select }).update({ status: 'banned' });
-                return `Banned user ${select} successful`;
+                let check1 = ctx.meta.user.type;
+                if (check1 === 'admin') {
+                    let { select } = ctx.params;
+                    await User.query().where({ id: select }).update({ status: 'banned' });
+                    return `Banned user ${select} successful`;
+                }
+                return 'You done have permission to access';
             }
         },
 
         userList: {
             handler(ctx) {
-                return User.query().select();
+                let check1 = ctx.meta.user.type;
+                if (check1 === 'admin') {
+                    return User.query().select();
+                }
+                return 'You done have permission to access';
             }
         }
 

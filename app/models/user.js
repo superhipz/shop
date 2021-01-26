@@ -20,7 +20,7 @@ class User extends Model {
     }
 
     static get selectableProps() {
-        return ['id', 'email', 'first_name', 'last_name', 'status', 'phone', 'type', 'quantity', 'amount', 'active_token', 'active_expire'];
+        return ['id', 'email', 'name', 'status', 'phone', 'type', 'quantity', 'shop_name', 'shop_image', 'amount', 'active_token', 'active_expire'];
     }
 
     static get adminTypes() {
@@ -50,10 +50,12 @@ class User extends Model {
     static get settings() {
         return {
             regex: {
-                password: /^[ -~]*$/
+                password: /^[ -~]*$/,
+                phoneNumber: /((09|03|07|08|05)+([0-9]{8})\b)/g
             }
         };
     }
+
 
     static hashPassword(password) {
         return bcrypt.hash(password, SALT_ROUNDS);
@@ -67,7 +69,7 @@ class User extends Model {
         // Create token
         let token = TokenHandler.generateJWT(user);
         return {
-            user: lodash.pick(user, ['id', 'first_name', 'last_name', 'email', 'organization', 'type', 'quantity', 'amount', 'status']),
+            user: lodash.pick(user, ['id', 'name', 'email', 'amount', 'type', 'status', 'phone', 'itemInCart']), // thêm thông tin đc chọn vào user
             token
         };
     }
